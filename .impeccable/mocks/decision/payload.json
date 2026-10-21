@@ -1,0 +1,133 @@
+{
+  "title": "Choose the visual world for Safar",
+  "question": "The roll assigned Airport Wayfinding. Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Airport Wayfinding",
+      "kicker": "THE ROLL",
+      "lineage": "International airport signage (ICAO pictograms, yellow-on-black direction signs, Bole terminal bilingual panels)",
+      "thesis": "Every step the agent takes is signposted like a terminal: follow any sign to its source.",
+      "palette": ["#1d2024", "#ffc81e", "#e8eaed", "#ffffff", "#1f7a4d"],
+      "materials": ["enamelled sign panels", "backlit gantry", "pictograms"],
+      "viewport": "Charcoal gantry header; proposal on a light concourse ground; trace rail is a column of directional signs, the running step a black-on-yellow 'you are here' sign.",
+      "risk": "If yellow spreads past the signs it reads as a construction site, not an airport.",
+      "raised": [
+        {"from": "challenger-star-atlas", "raise": "One fixed price ramp: every result's price is drawn on the same shared scale."},
+        {"from": "challenger-character-catalog", "raise": "Every flight or hotel option carries the same furniture in the same slots."},
+        {"from": "challenger-acetate-manual", "raise": "No easing: signs switch in a hard 90ms two-step, never fade."},
+        {"from": "challenger-catalog-sleeve", "raise": "Every tool call gets a gate number (A1, A2…) that the proposal cites."},
+        {"from": "challenger-datamatics", "raise": "All figures set in tabular numerals at data density."}
+      ],
+      "html": ".impeccable/mocks/decision/assigned.html"
+    },
+    {
+      "id": "model-pick",
+      "label": "Flight Coupon",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "Multi-part paper airline ticket coupons and agency itinerary printouts",
+      "thesis": "The proposal issued as a ticket; each tool result a numbered coupon torn along a perforation.",
+      "palette": ["#dcebe1", "#1c2a44", "#b3352b", "#f7f8f4"],
+      "materials": ["carbon-copy coupon stock", "perforations", "OCR mono"],
+      "viewport": "Proposal as an issued itinerary with coupon stubs; trace as a stack of torn coupons.",
+      "risk": "Familiar: boarding-pass UI is the most common travel-app trope.",
+      "html": ".impeccable/mocks/decision/model-pick.html"
+    },
+    {
+      "id": "challenger-warm-consumer",
+      "label": "Warm Consumer App",
+      "verdict": "competitive",
+      "lineage": "Soft-cornered consumer app canon",
+      "thesis": "Soft cards and one action colour reserved for whatever you can press.",
+      "palette": ["#f3eee8", "#ffffff", "#2b2a33", "#0b6bff"],
+      "materials": ["soft cards", "spring press"],
+      "viewport": "Single column of trace cards above the proposal; one blue action colour.",
+      "case": "Fuses cleanly and reads clearly, but agency staff aren't consumers, so it loses on identification.",
+      "risk": "Generic: nothing an evaluator remembers an hour later.",
+      "html": ".impeccable/mocks/decision/challenger-warm-consumer.html",
+      "hero": "https://impeccable.style/worlds/cards/digital-design-canon-warm-consumer-app-surface-hero.webp"
+    },
+    {
+      "id": "challenger-star-atlas",
+      "label": "Star Atlas",
+      "verdict": "declined",
+      "lineage": "Celestial star charts",
+      "thesis": "Results plotted as stars, magnitude as importance.",
+      "palette": ["#0f1a33", "#f2efe6", "#d9472b"],
+      "materials": ["chart ground", "magnitude dots"],
+      "viewport": "Results plotted as stars on a chart.",
+      "case": "Travel agents don't identify with star charts, and a plot hides prices.",
+      "risk": "Pretty, but it can't be read as a quote.",
+      "kept": "A fixed ramp carries hierarchy, so prices sit on one shared scale.",
+      "hero": "https://impeccable.style/worlds/cards/notation-diagram-systems-star-atlas-hero.webp"
+    },
+    {
+      "id": "challenger-character-catalog",
+      "label": "Character Goods Catalog",
+      "verdict": "declined",
+      "lineage": "Mascot roster catalogs",
+      "thesis": "Options as a ranked roster of characters.",
+      "palette": ["#ffd9e6", "#d8f0ff", "#fff3c4", "#ffffff"],
+      "materials": ["pastel cells", "name plates"],
+      "viewport": "Ranked pastel grid of options.",
+      "case": "Undercuts trust in a pricing tool on both axes.",
+      "risk": "Toy-like for money decisions.",
+      "kept": "Every option carries the same fixed furniture in fixed slots.",
+      "hero": "https://impeccable.style/worlds/cards/pop-culture-shelf-character-goods-catalog-hero.webp"
+    },
+    {
+      "id": "challenger-acetate-manual",
+      "label": "Acetate Tab Manual",
+      "verdict": "declined",
+      "lineage": "Boxed-software reference manuals",
+      "thesis": "Steps as acetate leaves over hued divider boards.",
+      "palette": ["#e8692c", "#f2c230", "#2a7f62", "#3046a8"],
+      "materials": ["acetate", "tab rail"],
+      "viewport": "Tabbed divider pages per step.",
+      "case": "Software-manual nostalgia, not travel; its layering obscures state.",
+      "risk": "Reads as a manual, not a working desk.",
+      "kept": "One strict motion grammar: hard two-frame steps, no easing.",
+      "hero": "https://impeccable.style/worlds/cards/rw-manual-acetate-tab-board-hero.webp"
+    },
+    {
+      "id": "challenger-catalog-sleeve",
+      "label": "Catalog Sleeve",
+      "verdict": "declined",
+      "lineage": "Factory Records numbered identity",
+      "thesis": "Everything a numbered catalog entry on black.",
+      "palette": ["#0c0c0c", "#ffffff", "#e23b2e", "#2f6fd6"],
+      "materials": ["matte black", "colour code strips"],
+      "viewport": "A fac-numbered index of steps.",
+      "case": "Coded labels fight a tool that must read instantly.",
+      "risk": "Cryptic by design.",
+      "kept": "Every step gets a sequential number the output cites.",
+      "hero": "https://impeccable.style/worlds/cards/brand-identity-canon-saville-catalog-sleeve-hero.webp"
+    },
+    {
+      "id": "challenger-datamatics",
+      "label": "Datamatics",
+      "verdict": "declined",
+      "lineage": "Ryoji Ikeda data installations",
+      "thesis": "Agent output as a strobing black-and-white data field.",
+      "palette": ["#000000", "#ffffff"],
+      "materials": ["barcode fields", "mono numerics"],
+      "viewport": "Barcode lattice of tool data.",
+      "case": "Spectacle over a quote; loses both axes.",
+      "risk": "Unreadable for an agent on deadline.",
+      "kept": "One tabular numeric voice at data density.",
+      "hero": "https://impeccable.style/worlds/cards/ikeda-datamatics-hero.webp"
+    }
+  ],
+  "reroll": {"registers": ["safer", "bolder"]},
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "An AI chat app with collapsible tool-step chips, executed cleanly.",
+    "palette": ["#ffffff", "#0f172a", "#64748b", "#2563eb"],
+    "materials": ["clean grid", "collapsible step chips"],
+    "viewport": "Sidebar of chats, centred conversation, tool steps as grey collapsible chips inline.",
+    "risk": "Looks like every AI demo an evaluator has already seen.",
+    "html": ".impeccable/mocks/decision/canon.html"
+  },
+  "steer": true
+}

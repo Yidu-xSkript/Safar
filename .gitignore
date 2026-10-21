@@ -1,0 +1,5 @@
+.env
+__pycache__/
+.impeccable/review/
+research_notes/
+reports/

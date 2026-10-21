@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Noto+Sans+Ethiopic:wght@600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;background:#e8eaed;color:#1d2024;font:15px/1.5 "Hanken Grotesk",sans-serif;font-variant-numeric:tabular-nums}
+.gantry{height:64px;background:#1d2024;color:#fff;display:flex;align-items:center;gap:20px;padding:0 28px}
+.logo{font-weight:800;font-size:24px;letter-spacing:-.02em}.logo b{color:#ffc81e}
+.am{font-family:"Noto Sans Ethiopic";font-size:14px;color:#9aa0a8}
+.loc{margin-left:auto;background:#ffc81e;color:#1d2024;font-weight:700;padding:8px 14px;font-size:14px}
+.grid{display:grid;grid-template-columns:1fr 440px;height:836px}
+.work{padding:28px 48px;display:flex;flex-direction:column;gap:18px;overflow:hidden}
+.brief{align-self:flex-end;background:#1d2024;color:#fff;padding:12px 16px;max-width:560px}
+h2{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.sub{color:#5b616a}
+.opt{background:#fff;display:grid;grid-template-columns:56px 1fr 120px 200px 90px;align-items:center;gap:16px;padding:14px 18px;border-left:6px solid #1d2024}
+.opt.best{border-left-color:#ffc81e}
+.gate{font-weight:800;font-size:13px;background:#1d2024;color:#ffc81e;padding:3px 6px;text-align:center}
+.ramp{height:8px;background:#d5d8dc;position:relative}.ramp i{position:absolute;inset:0 auto 0 0;background:#1d2024}
+.price{font-weight:800;font-size:20px;text-align:right}
+table{border-collapse:collapse;width:640px;background:#fff}td,th{padding:10px 16px;text-align:left;border-bottom:1px solid #e1e3e6}th{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#5b616a}
+.tot td{font-weight:800;font-size:18px}
+.rail{background:#26292e;padding:22px 20px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.rail h3{color:#9aa0a8;font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px}
+.sign{background:#1d2024;color:#fff;display:grid;grid-template-columns:44px 1fr 28px;gap:12px;align-items:center;padding:12px 14px;border-top:3px solid #ffc81e}
+.pict{width:44px;height:44px;background:#ffc81e;color:#1d2024;display:grid;place-items:center;font-size:24px;font-weight:800}
+.sign .t{font-weight:700;font-size:16px}.sign .m{color:#c3c7cd;font-size:13px}
+.arrow{font-size:24px;color:#ffc81e;font-weight:800}
+.sign.here{background:#ffc81e;color:#1d2024;border-top-color:#1d2024}.sign.here .pict{background:#1d2024;color:#ffc81e}.sign.here .m{color:#3a3d42}
+.ok{color:#5fd39a;font-size:13px;font-weight:600}
+.think{color:#9aa0a8;font-size:13px;font-style:italic;padding:4px 2px 4px 14px;border-left:2px solid #3a3e44}
+.compose{margin-top:auto;display:flex;gap:10px}.compose div{flex:1;background:#fff;padding:14px 16px;color:#7b8189}.compose b{background:#1d2024;color:#ffc81e;padding:14px 22px}
+.demo{font-size:12px;color:#5b616a;text-transform:uppercase;letter-spacing:.1em}
+</style></head><body>
+<div class="gantry"><div class="logo">Safar<b>.</b></div><span class="am">ሳፋር</span><span style="color:#9aa0a8">Agency trip desk</span><div class="loc">▣ Quote · Session 3</div></div>
+<div class="grid">
+<section class="work">
+<div class="brief">Client: 2 adults, Istanbul 12–17 March from ADD, about $1,500 total. Show ETB.</div>
+<h2>Istanbul, 12–17 March · 2 travellers</h2>
+<div class="sub">Built from gates A1–A4. <span class="demo">Demo inventory</span></div>
+<div class="opt best"><span class="gate">A1</span><div><b>Ethiopian Airlines ET704</b><div class="sub">ADD 01:15 → IST 06:05 · nonstop · 5.8h</div></div><div class="ramp"><i style="width:42%"></i></div><div class="sub">Lowest nonstop</div><div class="price">$412</div></div>
+<div class="opt"><span class="gate">A1</span><div><b>Turkish Airlines TK679</b><div class="sub">ADD 23:40 → IST 05:00 · nonstop · 6.3h</div></div><div class="ramp"><i style="width:55%"></i></div><div class="sub">+$128</div><div class="price">$540</div></div>
+<div class="opt best"><span class="gate">A3</span><div><b>Garden Suites Istanbul</b><div class="sub">4★ · 8.9 guest rating · free cancellation</div></div><div class="ramp"><i style="width:33%"></i></div><div class="sub">5 nights</div><div class="price">$118</div></div>
+<table><tr><th>Item</th><th>Source</th><th>USD</th><th>ETB</th></tr>
+<tr><td>Flights ×2, return</td><td>A1 · A2</td><td>$1,598</td><td>247,690</td></tr>
+<tr><td>Hotel, 5 nights</td><td>A3</td><td>$590</td><td>91,450</td></tr>
+<tr class="tot"><td>Total</td><td>A4</td><td>$2,188</td><td>339,140</td></tr></table>
+<div class="compose"><div>Refine: cheaper hotel, different dates…</div><b>Send</b></div>
+</section>
+<aside class="rail"><h3>Agent route · this turn</h3>
+<div class="think">Need outbound, return and hotel in parallel, then convert to ETB…</div>
+<div class="sign"><div class="pict">✈</div><div><div class="t">A1 Flights ADD → IST</div><div class="m">12 Mar · 4 results · from $412</div></div><div class="arrow">→</div></div>
+<div class="sign"><div class="pict">✈</div><div><div class="t">A2 Flights IST → ADD</div><div class="m">17 Mar · 4 results · from $387</div></div><div class="arrow">→</div></div>
+<div class="sign"><div class="pict">⌂</div><div><div class="t">A3 Hotels · Istanbul</div><div class="m">5 nights · 5 results · from $96/night</div></div><div class="arrow">→</div></div>
+<div class="sign here"><div class="pict">¤</div><div><div class="t">A4 Convert USD → ETB</div><div class="m">You are here · running</div></div><div class="arrow">●</div></div>
+<div class="ok">✓ 3 gates cleared · 1 running</div>
+</aside></div></body></html>

@@ -1,0 +1,4 @@
+anthropic>=1.13
+fastapi>=0.115
+uvicorn>=0.30
+openai>=1.40  # only for SAFAR_PROVIDER=openai

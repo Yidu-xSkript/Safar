@@ -1,0 +1,40 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&family=Martian+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;background:#f7f8f4;color:#1c2a44;font:15px/1.5 Archivo,sans-serif}
+header{height:60px;display:flex;align-items:center;gap:18px;padding:0 32px;border-bottom:2px solid #1c2a44}
+.logo{font-weight:800;font-size:22px}.mono{font-family:"Martian Mono",monospace;font-size:12px;letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:1fr 420px;height:840px}
+.work{padding:28px 44px;display:flex;flex-direction:column;gap:16px}
+.brief{align-self:flex-end;background:#1c2a44;color:#fff;padding:12px 16px;max-width:560px}
+.ticket{background:#dcebe1;display:grid;grid-template-columns:1fr 200px;position:relative}
+.ticket .main{padding:20px 24px;border-right:2px dashed #1c2a44}
+.ticket .stub{padding:20px;display:flex;flex-direction:column;justify-content:space-between}
+.red{color:#b3352b;font-weight:600}
+h2{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.row{display:grid;grid-template-columns:110px 1fr 1fr 100px;gap:14px;padding:8px 0;border-top:1px solid #a9c3b2}
+.big{font-size:24px;font-weight:800}
+.compose{margin-top:auto;display:flex;gap:10px}.compose div{flex:1;border:2px solid #1c2a44;padding:13px 16px;color:#7a8597}.compose b{background:#b3352b;color:#fff;padding:14px 22px}
+.rail{background:#eef1ea;border-left:2px solid #1c2a44;padding:22px;display:flex;flex-direction:column;gap:12px}
+.coupon{background:#fff;border:1px solid #1c2a44;display:grid;grid-template-columns:70px 1fr;}
+.coupon .n{background:#1c2a44;color:#dcebe1;display:grid;place-items:center;font-family:"Martian Mono";font-weight:600;border-right:2px dashed #dcebe1}
+.coupon div{padding:10px 12px}
+.coupon.live{border-color:#b3352b}.coupon.live .n{background:#b3352b}
+</style></head><body>
+<header><div class="logo">Safar</div><span class="mono">AGENCY TRIP DESK · ITINERARY/QUOTE</span><span class="mono" style="margin-left:auto">DEMO INVENTORY</span></header>
+<div class="grid"><section class="work">
+<div class="brief">Client: 2 adults, Istanbul 12–17 March from ADD, about $1,500 total. Show ETB.</div>
+<div class="ticket"><div class="main"><div class="mono red">PASSENGER ITINERARY / PROPOSAL</div><h2>ADD ⇄ IST · 12–17 MAR</h2>
+<div class="row mono"><span>CPN 1</span><span>ET704 ADD→IST</span><span>12MAR 0115</span><span>$412</span></div>
+<div class="row mono"><span>CPN 2</span><span>ET705 IST→ADD</span><span>17MAR 0840</span><span>$387</span></div>
+<div class="row mono"><span>CPN 3</span><span>GARDEN SUITES 4★</span><span>5 NTS</span><span>$590</span></div></div>
+<div class="stub"><div class="mono">TOTAL · 2 PAX</div><div class="big">$2,188</div><div class="mono red">ETB 339,140</div></div></div>
+<div class="compose"><div>Refine: cheaper hotel, different dates…</div><b>Send</b></div>
+</section>
+<aside class="rail"><div class="mono">COUPONS ISSUED THIS TURN</div>
+<div class="coupon"><span class="n">01</span><div><b>search_flights</b><div class="mono">ADD→IST · 12MAR · 4 FARES</div></div></div>
+<div class="coupon"><span class="n">02</span><div><b>search_flights</b><div class="mono">IST→ADD · 17MAR · 4 FARES</div></div></div>
+<div class="coupon"><span class="n">03</span><div><b>search_hotels</b><div class="mono">ISTANBUL · 5 NTS · 5 PROPS</div></div></div>
+<div class="coupon live"><span class="n">04</span><div><b>convert_currency</b><div class="mono">USD→ETB · ISSUING…</div></div></div>
+</aside></div></body></html>

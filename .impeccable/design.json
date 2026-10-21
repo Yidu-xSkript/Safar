@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T00:00:00Z",
+  "title": "Design System: Safar",
+  "extensions": {
+    "colorMeta": {
+      "carbon": { "role": "primary", "displayName": "Carbon Red", "canonical": "#b3352b", "tonalRamp": ["#3a110e", "#5e1c17", "#82261f", "#b3352b", "#cf5a4f", "#e08c84", "#efc0bb", "#f9e8e6"] },
+      "carbon-deep": { "role": "primary", "displayName": "Deep Carbon", "canonical": "#962a21", "tonalRamp": ["#300d0a", "#4f1611", "#731f18", "#962a21", "#c0473c", "#d9827a", "#ebb9b4", "#f8e6e4"] },
+      "ink": { "role": "neutral", "displayName": "Navy Ink", "canonical": "#1c2a44", "tonalRamp": ["#0e1522", "#1c2a44", "#2e3f5f", "#44526b", "#66738a", "#909aac", "#c0c6d1", "#e9ecf1"] },
+      "ink-2": { "role": "neutral", "displayName": "Faded Ink", "canonical": "#44526b", "tonalRamp": ["#151a23", "#252d3b", "#36415a", "#44526b", "#66738a", "#909aac", "#c0c6d1", "#e9ecf1"] },
+      "stock": { "role": "neutral", "displayName": "Coupon Stock", "canonical": "#dcebe1", "tonalRamp": ["#1d2b22", "#34493b", "#4f6857", "#6f8a77", "#a9c3b2", "#c5dccd", "#dcebe1", "#f0f7f2"] },
+      "rail": { "role": "neutral", "displayName": "Rail Mint", "canonical": "#eaf1ea", "tonalRamp": ["#202820", "#384238", "#535e53", "#737f73", "#a6b2a6", "#cfd9cf", "#eaf1ea", "#f6f9f6"] },
+      "ground": { "role": "neutral", "displayName": "Counter White", "canonical": "#f7f8f4", "tonalRamp": ["#26271f", "#3f4136", "#5c5e52", "#7c7e72", "#a8aa9f", "#d2d4cb", "#ebece6", "#f7f8f4"] },
+      "paper": { "role": "neutral", "displayName": "Paper", "canonical": "#ffffff", "tonalRamp": ["#262626", "#404040", "#5c5c5c", "#7a7a7a", "#a3a3a3", "#cccccc", "#ebebeb", "#ffffff"] },
+      "rule": { "role": "neutral", "displayName": "Rule Green", "canonical": "#a9c3b2", "tonalRamp": ["#1d2a22", "#34493b", "#4f6857", "#6f8a77", "#a9c3b2", "#c5dccd", "#dcebe1", "#f0f7f2"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Empty-state headline on the intro ticket." },
+      "headline": { "displayName": "Headline", "purpose": "Proposal section headings; fare total at 30px." },
+      "title": { "displayName": "Title", "purpose": "Rail heading." },
+      "body": { "displayName": "Body", "purpose": "Proposal prose and briefs, max 72ch." },
+      "data": { "displayName": "Data", "purpose": "Stub values and coupon numbers, tabular." },
+      "label": { "displayName": "Label", "purpose": "Stub labels, routes, statuses, table headers, demo tag; uppercase." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-issue", "value": "cubic-bezier(.16, 1, .3, 1)", "purpose": "Coupon issue reveal, stamp, disclosure chevron." },
+      { "name": "issue", "value": "0.42s clip-path inset(0 100% 0 0) to inset(0) with translateX(-6px) to 0", "purpose": "Each coupon and note issues left to right." },
+      { "name": "stamp", "value": "0.3s opacity 0 to 1, scale 1.08 to 1", "purpose": "Completed coupon result summary stamps in." },
+      { "name": "blink", "value": "1s steps(2) infinite", "purpose": "Carbon pending square while the proposal is drafting." },
+      { "name": "reduced-motion", "value": "animation and transition disabled", "purpose": "prefers-reduced-motion: reduce." }
+    ],
+    "breakpoints": [
+      { "name": "compact", "value": "900px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Send/Stop in the composer; the one carbon action.",
+      "html": "<button class=\"ds-btn-primary\">Send</button>",
+      "css": ".ds-btn-primary { background: var(--carbon, #b3352b); color: #fff; border: 0; border-radius: 0; padding: 14px 26px; font: 600 15px/1.2 var(--sans, Archivo, system-ui, sans-serif); letter-spacing: .01em; cursor: pointer; } .ds-btn-primary:hover { background: #962a21; } .ds-btn-primary:focus-visible { outline: 2px solid var(--carbon, #b3352b); outline-offset: 2px; } .ds-btn-primary:disabled { background: transparent; color: var(--ink-2, #44526b); box-shadow: inset 0 0 0 1.5px var(--ink-2, #44526b); cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Header secondary action (New trip).",
+      "html": "<button class=\"ds-btn-ghost\">New trip</button>",
+      "css": ".ds-btn-ghost { background: none; color: var(--ink, #1c2a44); border: 1.5px solid var(--ink, #1c2a44); border-radius: 0; padding: 7px 14px; font: 600 14px/1.2 var(--sans, Archivo, system-ui, sans-serif); cursor: pointer; } .ds-btn-ghost:hover { background: var(--ink, #1c2a44); color: var(--ground, #f7f8f4); } .ds-btn-ghost:focus-visible { outline: 2px solid var(--carbon, #b3352b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Composer Field",
+      "kind": "input",
+      "refersTo": "input-composer",
+      "description": "Brief textarea pinned at the bottom of the work area.",
+      "html": "<textarea class=\"ds-input\" rows=\"2\" placeholder=\"Paste a client brief: who, where, when, budget\"></textarea>",
+      "css": ".ds-input { width: 100%; resize: none; border: 1.5px solid var(--ink, #1c2a44); border-radius: 0; background: #fff; color: var(--ink, #1c2a44); padding: 11px 14px; font: 400 15px/1.55 var(--sans, Archivo, system-ui, sans-serif); caret-color: var(--carbon, #b3352b); } .ds-input::placeholder { color: #66738a; } .ds-input:focus-visible { outline: 2px solid var(--carbon, #b3352b); outline-offset: 2px; }"
+    },
+    {
+      "name": "Header",
+      "kind": "nav",
+      "description": "60px band over a 2px navy rule: wordmark, desk name, demo tag, ghost action.",
+      "html": "<header class=\"ds-head\"><b class=\"ds-logo\">Safar</b><span class=\"ds-desk\">Agency trip desk</span><span class=\"ds-tag\">DEMO INVENTORY</span></header>",
+      "css": ".ds-head { display: flex; align-items: center; gap: 18px; height: 60px; padding: 0 28px; background: var(--ground, #f7f8f4); border-bottom: 2px solid var(--ink, #1c2a44); color: var(--ink, #1c2a44); font-family: Archivo, system-ui, sans-serif; } .ds-logo { font: 800 22px/1 Archivo, system-ui, sans-serif; letter-spacing: -.02em; } .ds-desk { color: var(--ink-2, #44526b); } .ds-tag { margin-left: auto; color: var(--ink-2, #44526b); font: 400 12px 'Martian Mono', ui-monospace, monospace; letter-spacing: .02em; }"
+    },
+    {
+      "name": "Ticket",
+      "kind": "card",
+      "refersTo": "ticket",
+      "description": "Proposal panel on mint stock with a perforated, notched mono stub.",
+      "html": "<section class=\"ds-ticket\"><div class=\"ds-ticket-main\"><h2>Istanbul, 5 nights</h2><p>Two adults from Addis, nonstop both ways.</p></div><aside class=\"ds-stub\"><dl><dt>ROUTE</dt><dd>ADD ⇄ IST</dd><dt>COUPONS</dt><dd>CPN 01–04</dd></dl><div>ISSUED · DEMO FARES</div></aside></section>",
+      "css": ".ds-ticket { display: grid; grid-template-columns: minmax(0,1fr) 210px; background: var(--stock, #dcebe1); color: var(--ink, #1c2a44); font: 400 15px/1.55 Archivo, system-ui, sans-serif; } .ds-ticket-main { padding: 22px 26px 24px; } .ds-ticket-main h2 { font: 800 26px/1.15 Archivo, system-ui, sans-serif; letter-spacing: -.02em; margin: 0 0 10px; } .ds-ticket-main p { margin: 0; } .ds-stub { position: relative; padding: 22px 20px; border-left: 2px dashed var(--ink, #1c2a44); font: 400 12px 'Martian Mono', ui-monospace, monospace; letter-spacing: .02em; display: flex; flex-direction: column; gap: 14px; } .ds-stub::before, .ds-stub::after { content: ''; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--ground, #f7f8f4); } .ds-stub::before { top: -10px; } .ds-stub::after { bottom: -10px; } .ds-stub dl { margin: 0; } .ds-stub dt { color: var(--ink-2, #44526b); } .ds-stub dd { margin: 2px 0 12px; font: 600 15px/1.3 'Martian Mono', ui-monospace, monospace; } .ds-stub > div { font-weight: 600; }"
+    },
+    {
+      "name": "Coupon",
+      "kind": "custom",
+      "refersTo": "coupon",
+      "description": "One agent lookup: navy CPN block, dashed perforation, mono body; red while issuing.",
+      "html": "<article class=\"ds-coupon\"><div class=\"ds-cpn\"><small>CPN</small>01</div><div class=\"ds-cpn-body\"><div class=\"ds-cpn-title\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M12 4v6M2 18h20\"/></svg>search_hotels</div><div class=\"ds-cpn-route\">Istanbul · 12NOV · 5 NTS</div><div class=\"ds-cpn-status\">5 PROPERTIES · FROM $79/NT</div></div></article><article class=\"ds-coupon is-live\"><div class=\"ds-cpn\"><small>CPN</small>02</div><div class=\"ds-cpn-body\"><div class=\"ds-cpn-title\">convert_currency</div><div class=\"ds-cpn-route\">2261 USD→ETB</div><div class=\"ds-cpn-status\">ISSUING…</div></div></article>",
+      "css": ".ds-coupon { display: grid; grid-template-columns: 64px minmax(0,1fr); background: #fff; border: 1.5px solid var(--ink, #1c2a44); color: var(--ink, #1c2a44); margin-bottom: 10px; } .ds-cpn { display: grid; place-items: center; align-content: center; gap: 2px; background: var(--ink, #1c2a44); color: var(--stock, #dcebe1); border-right: 2px dashed var(--stock, #dcebe1); font: 600 15px/1 'Martian Mono', ui-monospace, monospace; transition: background .2s; } .ds-cpn small { font-size: 9px; letter-spacing: .1em; opacity: .8; } .ds-cpn-body { padding: 10px 12px; min-width: 0; } .ds-cpn-title { display: flex; align-items: center; gap: 7px; font: 600 13px 'Martian Mono', ui-monospace, monospace; } .ds-cpn-route { color: var(--ink-2, #44526b); margin-top: 2px; font: 400 12px 'Martian Mono', ui-monospace, monospace; letter-spacing: .02em; } .ds-cpn-status { margin-top: 6px; font: 600 12px 'Martian Mono', ui-monospace, monospace; } .ds-coupon.is-live { border-color: var(--carbon, #b3352b); } .ds-coupon.is-live .ds-cpn { background: var(--carbon, #b3352b); } .ds-coupon.is-live .ds-cpn-status { color: var(--carbon, #b3352b); }"
+    },
+    {
+      "name": "Client Brief",
+      "kind": "card",
+      "refersTo": "client-brief",
+      "description": "The client's words, right-aligned and inverted to navy.",
+      "html": "<div class=\"ds-brief\">Client: 2 adults, Istanbul next month for 5 nights from Addis, about $1,500 per person.</div>",
+      "css": ".ds-brief { margin-left: auto; max-width: min(560px, 85%); background: var(--ink, #1c2a44); color: #fff; padding: 12px 16px; font: 400 15px/1.55 Archivo, system-ui, sans-serif; white-space: pre-wrap; }"
+    },
+    {
+      "name": "Void Stamp",
+      "kind": "chip",
+      "description": "Error marker printed on a ticket that was not issued.",
+      "html": "<div class=\"ds-void\"><span>VOID</span>Stopped. This request was not added to the trip.</div>",
+      "css": ".ds-void { color: var(--carbon, #b3352b); font: 600 15px/1.55 Archivo, system-ui, sans-serif; } .ds-void span { display: inline-block; margin-right: 8px; padding: 1px 6px; border: 1.5px solid var(--carbon, #b3352b); font: 400 12px 'Martian Mono', ui-monospace, monospace; letter-spacing: .02em; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Flight Coupon",
+    "overview": "Safar's quote is an issued airline ticket, and every lookup the agent makes is a numbered coupon torn off to build it. The system borrows the materials of paper travel documents: mint coupon stock on a cool off-white counter, navy ink for type and rules, dashed perforations with punched notches, and monospaced data printed like a fare box. It refuses the chat-column default of grey collapsible \"tool step\" chips; the agent's work is a stack of issued documents, not a transcript.\n\nDensity is operational. The work area holds the client brief, the proposal ticket, and the composer; a 420px pale-mint rail holds the coupon stack. Everything is square-cornered and ruled, depth comes from stock colour and ink rules rather than shadows, and one carbon red is reserved for things that are live, failed, or the primary action.",
+    "keyCharacteristics": [
+      "Square-cut paper documents: zero radius everywhere; the only curves are the punched notches.",
+      "Navy ink rules (2px structural, 1.5px object outlines, 1px quiet dividers in the rule green).",
+      "Dashed perforations separate ticket from stub and coupon number from coupon body.",
+      "Archivo speaks; Martian Mono prints data (codes, dates, fares, coupon numbers), uppercased like a ticket.",
+      "Carbon red marks only live/issuing state, errors, and the primary action."
+    ],
+    "rules": [
+      { "name": "The Carbon Copy Rule", "body": "Red means something is happening, went wrong, or is the one action to take. A finished coupon, a settled proposal, and any decoration stay navy and mint.", "section": "colors" },
+      { "name": "The Ink Inversion Rule", "body": "Selection and the client's own words invert to navy with paper or stock text; the agent's output always sits on stock or paper.", "section": "colors" },
+      { "name": "The Printer Rule", "body": "Anything a ticket printer would print (flight codes, dates as 12NOV, times as 0930, fares, CPN numbers, status) is Martian Mono with tabular figures. Sentences are Archivo.", "section": "typography" },
+      { "name": "The Paper Stack Rule", "body": "Surfaces separate by stock colour and ink rule, never by shadow or blur.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every surface square-cut and separate it with stock colour and ink rules.",
+      "Do print codes, dates, times, fares and coupon numbers in Martian Mono with tabular figures, uppercase where a ticket would.",
+      "Do split a document from its stub with a 2px dashed perforation and punch ground-coloured notches at its ends.",
+      "Do reserve carbon for live/issuing state, errors, focus and the single primary action.",
+      "Do label demo inventory wherever prices appear.",
+      "Do draw icons as 16px stroked SVG pictograms in currentColor."
+    ],
+    "donts": [
+      "Don't add shadows, blur or rounded corners; the notch is the only curve.",
+      "Don't use carbon red for decoration, completed states, or secondary actions.",
+      "Don't set prose in Martian Mono or data in Archivo.",
+      "Don't render agent steps as grey collapsible chat chips; they are numbered coupons."
+    ],
+    "openNotes": [
+      "Non-binding, from the finish review: notches on rail coupons at the number-block perforation.",
+      "Non-binding, from the finish review: a stronger validation stamp on completed coupons."
+    ]
+  }
+}

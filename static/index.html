@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try { const t = localStorage.getItem("safar.theme"); if (t) document.documentElement.dataset.theme = t; } catch {}</script>
+<title>Safar · Agency Trip Desk</title>
+<meta name="description" content="An AI copilot for travel agents: turns a client brief into a priced trip proposal, with every lookup shown as a numbered coupon.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #f7f8f4;
+    --stock: #dcebe1;        /* coupon stock */
+    --stock-deep: #c5dccd;
+    --rail: #eaf1ea;
+    --ink: #1c2a44;
+    --ink-2: #44526b;        /* secondary text, navy-tinted */
+    --rule: #a9c3b2;
+    --carbon: #b3352b;       /* live / issuing / errors: text and borders */
+    --carbon-fill: #b3352b;  /* the primary action and live coupons: filled shapes with white text */
+    --carbon-deep: #962a21;
+    --paper: #ffffff;
+    --placeholder: #66738a;
+    --line-soft: #e1e8e3;
+    --notes-bg: rgba(255, 255, 255, .5);
+    --ok: #2f6b47;
+    --backdrop: rgba(28, 42, 68, .45);
+    --mono: "Martian Mono", ui-monospace, monospace;
+    --sans: "Archivo", system-ui, sans-serif;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #10151d;       /* the same ticket, read under night light */
+      --stock: #1b2a28;
+      --stock-deep: #28403a;
+      --rail: #141b22;
+      --ink: #e3e9e4;
+      --ink-2: #a3b0bd;
+      --rule: #3a4d47;
+      --carbon: #ff7a62;       /* brighter as text so it stays readable on dark */
+      --carbon-fill: #b3352b;
+      --carbon-deep: #962a21;
+      --paper: #18202a;
+      --placeholder: #8a96a6;
+      --line-soft: #273038;
+      --notes-bg: rgba(255, 255, 255, .04);
+      --ok: #7fcf9f;
+      --backdrop: rgba(4, 8, 14, .65);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #10151d;       /* the same ticket, read under night light */
+    --stock: #1b2a28;
+    --stock-deep: #28403a;
+    --rail: #141b22;
+    --ink: #e3e9e4;
+    --ink-2: #a3b0bd;
+    --rule: #3a4d47;
+    --carbon: #ff7a62;       /* brighter as text so it stays readable on dark */
+    --carbon-fill: #b3352b;
+    --carbon-deep: #962a21;
+    --paper: #18202a;
+    --placeholder: #8a96a6;
+    --line-soft: #273038;
+    --notes-bg: rgba(255, 255, 255, .04);
+    --ok: #7fcf9f;
+    --backdrop: rgba(4, 8, 14, .65);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 400 15px/1.55 var(--sans); caret-color: var(--carbon); }
+  ::selection { background: var(--ink); color: var(--stock); }
+  * { scrollbar-width: thin; scrollbar-color: var(--rule) transparent; }
+  :focus-visible { outline: 2px solid var(--carbon); outline-offset: 2px; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  .mono { font-family: var(--mono); font-size: 12px; letter-spacing: .02em; font-variant-numeric: tabular-nums; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  #root { height: 100dvh; display: grid; grid-template-rows: auto minmax(0, 1fr); grid-template-columns: minmax(0, 1fr); }
+
+  /* Header */
+  header { display: flex; align-items: center; gap: 18px; padding: 0 28px; height: 60px; border-bottom: 2px solid var(--ink); background: var(--ground); }
+  .logo { font: 800 22px/1 var(--sans); letter-spacing: -.02em; color: inherit; text-decoration: none; }
+  .desk { color: var(--ink-2); }
+  .head-right { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+  .demo-tag { color: var(--ink-2); }
+  .btn-ghost { background: none; border: 1.5px solid var(--ink); padding: 7px 14px; font-weight: 600; font-size: 14px; }
+  .btn-ghost:hover:not(:disabled) { background: var(--ink); color: var(--ground); }
+  .btn-ghost:disabled { opacity: .45; cursor: not-allowed; }
+  .markup { display: flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink-2); }
+  .markup select { border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 6px 6px; font: 600 14px var(--mono); border-radius: 0; }
+  .markup input { width: 64px; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 6px 8px; font: 600 14px var(--mono); border-radius: 0; text-align: right; }
+  .print-only { display: none; }
+
+  /* Layout */
+  main { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 420px; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "log rail" "compose rail"; }
+  .log { grid-area: log; overflow-y: auto; padding: 28px 44px 20px; display: flex; flex-direction: column; gap: 18px; }
+  .log > * { width: 100%; max-width: 920px; margin-inline: auto; }
+
+  /* Client brief */
+  .brief { align-self: flex-end; width: auto !important; max-width: min(560px, 85%) !important; margin-inline: auto 0 !important; background: var(--ink); color: var(--paper); padding: 12px 16px; white-space: pre-wrap; }
+
+  /* Ticket */
+  .ticket { display: grid; grid-template-columns: minmax(0, 1fr) 210px; background: var(--stock); position: relative; }
+  .ticket .main { padding: 22px 26px 24px; min-width: 0; }
+  .ticket .stub { padding: 22px 20px; display: flex; flex-direction: column; gap: 14px; border-left: 2px dashed var(--ink); position: relative; }
+  .ticket .stub::before, .ticket .stub::after { content: ""; position: absolute; left: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--ground); }
+  .ticket .stub::before { top: -10px; } .ticket .stub::after { bottom: -10px; }
+  .stub dl { margin: 0; display: grid; gap: 12px; }
+  .stub dt { color: var(--ink-2); }
+  .stub dd { margin: 2px 0 0; font: 600 15px/1.3 var(--mono); }
+  .stub .issued { font-weight: 600; }
+  .stub .issued.live, .stub .issued.err { color: var(--carbon); }
+  .stub .total { padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  .stub .total .big { display: block; font: 800 30px/1.1 var(--sans); letter-spacing: -.02em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .stub .total .alt { display: block; font: 600 14px var(--mono); margin-top: 4px; }
+  .stub .total .net { display: block; color: var(--ink-2); font-size: 11px; margin-top: 8px; }
+  .btn-model { font: 600 13px var(--mono); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .btn-link { background: none; border: 0; padding: 0; font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 3px; }
+  .settings { background: var(--paper); border: 1.5px solid var(--ink); padding: 20px 22px; display: grid; gap: 12px; }
+  .settings-dialog { border: 0; padding: 0; background: transparent; color: var(--ink); width: min(560px, calc(100vw - 32px));
+                     max-height: calc(100dvh - 48px); overflow: auto; }
+  .settings-dialog::backdrop { background: var(--backdrop); }
+  .settings-dialog[open] { animation: drop .22s var(--ease) both; }
+  @keyframes drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+  .btn-icon { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; }
+  .settings-head { display: flex; justify-content: space-between; align-items: baseline; }
+  .settings h2 { margin: 0; font: 800 22px/1.1 var(--sans); }
+  .settings-lede, .settings-hint { margin: 0; color: var(--ink-2); font-size: 14px; }
+  .settings-ok { margin: 0; color: var(--ok); font-weight: 600; font-size: 14px; }
+  .settings-err { margin: 0; color: var(--carbon); font-weight: 600; font-size: 14px; }
+  .field { display: grid; gap: 4px; }
+  .field > span { font-weight: 600; font-size: 13px; }
+  .field em { font: 500 11px var(--mono); font-style: normal; color: var(--ink-2); margin-left: 6px; }
+  .field select, .field input { border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 9px 10px; font: 500 14px var(--mono); border-radius: 0; width: 100%; }
+  .settings-keys { display: grid; gap: 10px; padding: 12px; background: var(--rail); }
+  .settings-keys .btn-ghost { justify-self: start; }
+  .free-warning { border: 1.5px dashed var(--carbon); padding: 12px 14px; font-size: 14px; }
+  .free-warning strong { display: block; color: var(--carbon); font-weight: 700; margin-bottom: 4px; }
+  .free-warning ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); }
+  .free-warning b { color: var(--ink); font-weight: 600; }
+  .compose { flex-direction: column; gap: 6px; }
+  .free-note { width: 100%; max-width: 920px; margin: 0 auto; font-size: 12px; color: var(--ink-2); }
+  .free-note b { color: var(--carbon); font-weight: 600; }
+  .settings-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+  .settings-actions .btn-primary { padding: 12px 20px; }
+  .btn-print { align-self: flex-start; font: 600 13px var(--sans); padding: 6px 12px; }
+
+  /* Markdown proposal */
+  .proposal { max-width: 72ch; }
+  .proposal > :first-child { margin-top: 0; }
+  .proposal h1, .proposal h2 { font: 800 26px/1.15 var(--sans); letter-spacing: -.02em; margin: 22px 0 10px; text-wrap: balance; }
+  .proposal h3 { font: 700 17px/1.3 var(--sans); margin: 22px 0 6px; }
+  .proposal p, .proposal ul, .proposal ol { margin: 0 0 10px; }
+  .proposal table { border-collapse: collapse; width: 100%; margin: 10px 0 14px; font-variant-numeric: tabular-nums; }
+  .proposal th { text-align: left; font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); padding: 6px 12px 6px 0; border-bottom: 2px solid var(--ink); }
+  .proposal td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  .proposal td:last-child, .proposal th:last-child { text-align: right; padding-right: 0; }
+  .proposal code { font-family: var(--mono); font-size: .85em; }
+  .proposal strong { font-weight: 700; }
+  .proposal hr { border: 0; border-top: 2px dashed var(--rule); margin: 18px 0; }
+  .pending { color: var(--ink-2); font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+  .pending::before { content: ""; width: 8px; height: 8px; background: var(--carbon-fill); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .void { margin-top: 14px; color: var(--carbon); font-weight: 600; }
+  .void .mono { display: inline-block; border: 1.5px solid var(--carbon); padding: 1px 6px; margin-right: 8px; }
+
+  /* Empty state */
+  .intro h1 { font: 800 clamp(28px, 3.2vw, 38px)/1.08 var(--sans); letter-spacing: -.025em; margin: 0 0 10px; text-wrap: balance; }
+  .intro p { margin: 0 0 20px; color: var(--ink-2); max-width: 60ch; }
+  .briefs { display: grid; gap: 0; border-top: 2px solid var(--ink); }
+  .briefs button { display: grid; grid-template-columns: 1fr auto; gap: 14px; align-items: baseline; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--rule); padding: 13px 0; }
+  .briefs button:hover .use { color: var(--carbon); }
+  .briefs button:hover .text { text-decoration: underline; text-decoration-color: var(--carbon); text-underline-offset: 3px; }
+  .briefs .use { font-weight: 600; font-size: 13px; }
+  .how dd { font: 400 13px/1.45 var(--sans); }
+
+  /* Composer */
+  .compose { grid-area: compose; display: flex; gap: 10px; padding: 14px 44px 20px; border-top: 2px solid var(--ink); background: var(--ground); }
+  .compose > div { width: 100%; max-width: 920px; margin-inline: auto; display: flex; gap: 10px; }
+  .compose textarea { flex: 1; resize: none; border: 1.5px solid var(--ink); background: var(--paper); color: var(--ink); padding: 11px 14px; font: inherit; border-radius: 0; }
+  .compose textarea::placeholder, .field input::placeholder { color: var(--placeholder); }
+  .btn-primary { background: var(--carbon-fill); color: #fff; border: 0; padding: 0 26px; font-weight: 600; letter-spacing: .01em; }
+  .btn-primary:hover:not(:disabled) { background: var(--carbon-deep); }
+  .btn-primary:disabled { background: transparent; color: var(--ink-2); box-shadow: inset 0 0 0 1.5px var(--ink-2); cursor: not-allowed; }
+
+  /* Coupon rail */
+  .rail { grid-area: rail; background: var(--rail); border-left: 2px solid var(--ink); overflow-y: auto; padding: 22px 22px 28px; }
+  .rail h2 { font: 800 18px/1.2 var(--sans); margin: 0 0 4px; }
+  .rail .lede { color: var(--ink-2); font-size: 13px; margin: 0 0 18px; }
+  .request { margin: 0 0 22px; }
+  .request-head { display: flex; justify-content: space-between; color: var(--ink-2); font-size: 13px; font-weight: 600; padding-bottom: 6px; margin-bottom: 10px; border-bottom: 1px solid var(--rule); }
+  .stack { display: grid; gap: 10px; }
+  .coupon { display: grid; grid-template-columns: 64px minmax(0, 1fr); background: var(--paper); border: 1.5px solid var(--ink); animation: issue .42s var(--ease) both; }
+  .coupon .num { display: grid; place-items: center; align-content: center; gap: 2px; background: var(--ink); color: var(--stock); border-right: 2px dashed var(--stock); font: 600 15px/1 var(--mono); transition: background .2s; }
+  .coupon .num small { font-size: 9px; letter-spacing: .1em; opacity: .8; }
+  .coupon.live { border-color: var(--carbon); }
+  .coupon.live .num { background: var(--carbon-fill); color: #fff; }
+  .coupon.err { border-color: var(--carbon); }
+  .coupon.err .num { background: var(--paper); color: var(--carbon); border-right-color: var(--carbon); }
+  .coupon .body { padding: 10px 12px; min-width: 0; }
+  .coupon .title { display: flex; align-items: center; gap: 7px; font: 600 13px var(--mono); }
+  .coupon .title svg { flex: none; }
+  .coupon .route { color: var(--ink-2); margin-top: 2px; overflow-wrap: anywhere; }
+  .coupon .status { margin-top: 6px; font: 600 12px var(--mono); }
+  .coupon .source { margin-top: 3px; color: var(--ink-2); font: 500 10px var(--mono); letter-spacing: .06em; }
+  .fares .hotel { display: flex; align-items: center; gap: 6px; }
+  .fares img { width: 36px; height: 28px; object-fit: cover; flex: none; background: var(--stock); }
+  .coupon.live .status { color: var(--carbon); }
+  .coupon.done .status { animation: stamp .3s var(--ease) both; }
+  .coupon.err .status { color: var(--carbon); }
+  .coupon.flag { border-color: var(--carbon); }
+  .coupon.flag .num { background: var(--paper); color: var(--carbon); border-right-color: var(--carbon); }
+  .coupon.flag .status { color: var(--carbon); }
+  .coupon .reason { margin-top: 4px; font-size: 12px; color: var(--ink-2); }
+  .briefs .tag { display: inline-block; font: 600 10px var(--mono); letter-spacing: .06em; border: 1.5px solid var(--ink); padding: 1px 5px; margin-right: 8px; vertical-align: 1px; }
+  .coupon details { margin-top: 6px; }
+  .coupon summary { cursor: pointer; font-size: 12px; font-weight: 600; color: var(--ink-2); list-style: none; display: inline-flex; align-items: center; gap: 4px; }
+  .coupon summary::-webkit-details-marker { display: none; }
+  .coupon summary svg { transition: transform .2s var(--ease); }
+  .coupon details[open] summary svg { transform: rotate(90deg); }
+  .coupon summary:hover { color: var(--ink); }
+  .fares { width: 100%; border-collapse: collapse; margin-top: 6px; font: 400 11px/1.4 var(--mono); font-variant-numeric: tabular-nums; }
+  .fares td { padding: 4px 6px 4px 0; border-top: 1px solid var(--line-soft); white-space: nowrap; }
+  .fares td:first-child { white-space: normal; }
+  .fares td:last-child { text-align: right; padding-right: 0; font-weight: 600; }
+  .notes { font-size: 13px; color: var(--ink-2); border: 1px solid var(--rule); background: var(--notes-bg); padding: 8px 10px; animation: issue .42s var(--ease) both; }
+  .notes .label { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; }
+  .notes p { margin: 0; white-space: pre-wrap; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+  .usage { color: var(--ink-2); margin-top: 10px; }
+  .placeholder { border: 1.5px dashed var(--rule); padding: 18px 16px; color: var(--ink-2); font-size: 13px; display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; }
+  .placeholder .num { font: 600 15px var(--mono); color: var(--ink-2); text-align: center; }
+
+  @keyframes issue { from { clip-path: inset(0 100% 0 0); transform: translateX(-6px); } to { clip-path: inset(0 0 0 0); transform: none; } }
+  @keyframes stamp { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } }
+
+  @media print {
+    :root:root:root {
+      color-scheme: light;
+    --ground: #f7f8f4;
+      --stock: #dcebe1;        /* coupon stock */
+      --stock-deep: #c5dccd;
+      --rail: #eaf1ea;
+      --ink: #1c2a44;
+      --ink-2: #44526b;        /* secondary text, navy-tinted */
+      --rule: #a9c3b2;
+      --carbon: #b3352b;       /* live / issuing / errors: text and borders */
+      --carbon-fill: #b3352b;  /* the primary action and live coupons: filled shapes with white text */
+      --carbon-deep: #962a21;
+      --paper: #ffffff;
+      --placeholder: #66738a;
+      --line-soft: #e1e8e3;
+      --notes-bg: rgba(255, 255, 255, .5);
+      --ok: #2f6b47;
+      --backdrop: rgba(28, 42, 68, .45);
+    }
+    @page { margin: 14mm; }
+    body { background: #fff; }
+    #root, main { display: block; height: auto; }
+    header, .rail, .compose, .brief, .ticket:not(.latest), .agent-only, .proposal.screen { display: none !important; }
+    .print-only { display: block; }
+    .log { overflow: visible; padding: 0; }
+    .log > * { max-width: none; }
+    .ticket { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .ticket .stub::before, .ticket .stub::after { background: #fff; }
+    .print-head { font: 600 11px var(--mono); letter-spacing: .06em; color: var(--ink-2); margin-bottom: 14px; }
+    .proposal tr, .proposal li { break-inside: avoid; }
+  }
+
+  @media (max-width: 900px) {
+    header { padding: 0 16px; gap: 12px; }
+    .desk, .demo-more, .markup-label { display: none; }
+    /* Controls get their own row on phones instead of squeezing the logo and buttons */
+    header { height: auto; min-height: 60px; flex-wrap: wrap; row-gap: 8px; padding-top: 10px; padding-bottom: 10px; }
+    .head-right { gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+    .btn-ghost { white-space: nowrap; }
+    main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; grid-template-areas: "log" "rail" "compose"; }
+    .log { padding: 20px 16px; }
+    .compose { padding: 10px 16px 14px; }
+    .ticket { grid-template-columns: minmax(0, 1fr); }
+    .proposal { font-size: 14px; }
+    .proposal th, .proposal td { padding-right: 8px; }
+    .ticket .main { padding: 18px 16px; }
+    .ticket .stub { border-left: 0; border-top: 2px dashed var(--ink); padding: 14px 16px; }
+    .ticket .stub::before, .ticket .stub::after { top: -11px; bottom: auto; }
+    .ticket .stub::before { left: -10px; } .ticket .stub::after { left: auto; right: -10px; }
+    .stub dl { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+    .stub .issued { margin-top: 0; }
+    .rail { border-left: 0; border-top: 2px solid var(--ink); padding: 10px 16px; overflow-x: auto; overflow-y: hidden; }
+    .rail h2, .rail .lede, .request-head, .usage { display: none; }
+    .notes { width: 220px; }
+    .notes p { -webkit-line-clamp: 3; }
+    .rail-inner { display: flex; gap: 10px; width: max-content; }
+    .request { margin: 0; }
+    .stack { display: flex; gap: 10px; }
+    .coupon { width: 250px; }
+    .coupon details { display: none; }
+    .placeholder { width: calc(100vw - 32px); padding: 10px 12px; }
+    .briefs button { grid-template-columns: 1fr; }
+    .briefs .use { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import { createElement, useState, useRef, useEffect } from "https://esm.sh/react@19";
+import { createRoot } from "https://esm.sh/react-dom@19/client";
+import htm from "https://esm.sh/htm@3";
+import { marked } from "https://esm.sh/marked@15";
+import DOMPurify from "https://esm.sh/dompurify@3";
+
+const html = htm.bind(createElement);
+
+const isoIn = (days) => new Date(Date.now() + days * 864e5).toISOString().slice(0, 10);
+// Sample briefs per edition. The plan-check samples mix real sandbox items (a real fare, a real hotel at a
+// lowball price, a real tour) with invented ones, the way ChatGPT plans do.
+const BRIEFS = {
+  addis: [
+    { text: "Client: 2 adults, Istanbul next month for 5 nights from Addis, about $1,500 per person. Quote in ETB too." },
+    { text: "Client: cheapest Addis to Nairobi next Friday, back Sunday, hotel under $120 a night." },
+    { text: "Client: couple, long weekend in Dubai from ADD, 4-star hotel with free cancellation." },
+    {
+      audit: true,
+      label: "A client sent the Istanbul plan ChatGPT made them. Check it before you reply.",
+      text: `My client sent this plan from ChatGPT. Check it before I reply:
+
+Istanbul for 2 adults, ${isoIn(30)} to ${isoIn(34)} (4 nights), flying from Addis Ababa.
+- Flight out: Turkish Airlines TK 677, ADD to IST on ${isoIn(30)}, about $420 per person.
+- Flight back: Ethiopian Airlines ET 9999, IST to ADD on ${isoIn(34)}, about $380 per person.
+- Hotel: Bosphorus Sky Palace Hotel in Sultanahmet, $110 a night.
+- Upgrade option: Conrad Istanbul Bosphorus, only $95 a night.
+- Day 2: Hagia Sophia with an audioguide, $30 each.
+- Day 3: Sunset hot-air balloon ride over the Golden Horn, $150 each.`,
+    },
+  ],
+  internova: [
+    { text: "Client in Chicago: 2 adults, 7 nights in Lisbon next month, about $6,000 all in, boutique 4-star." },
+    { text: "Client in Toronto: family of 4 (2 adults, kids 9 and 12), Cancún for a week over March break, all-inclusive, under CA$9,000. Quote in CAD." },
+    { text: "Client in Manchester: couple, long weekend in Rome next month, 5-star near the Spanish Steps, about £2,500. Quote in GBP." },
+    {
+      audit: true,
+      label: "A client sent the Lisbon plan ChatGPT made them. Check it before you reply.",
+      text: `My client sent this plan from ChatGPT. Check it before I reply:
+
+Lisbon for 2 adults, ${isoIn(30)} to ${isoIn(35)} (5 nights), flying from New York.
+- Flight out: American Airlines AA 10, JFK to LIS on ${isoIn(30)}, about $230 per person.
+- Flight back: TAP Air Portugal TP 9999, LIS to JFK on ${isoIn(35)}, about $310 per person.
+- Hotel: Alfama Sky Palace Hotel, $140 a night.
+- Upgrade option: Four Seasons Hotel Ritz Lisbon, only $280 a night.
+- Day 2: Port wine tasting at Taylor's, $18 each.
+- Day 3: Sunset hot-air balloon ride over the Tagus, $160 each.`,
+    },
+  ],
+};
+
+const icon = (d) => html`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d=${d} /></svg>`;
+const TOOLS = {
+  search_flights: { label: "Flight search", icon: icon("M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z") },
+  search_hotels: { label: "Hotel search", icon: icon("M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M12 4v6M2 18h20") },
+  convert_currency: { label: "Currency", icon: icon("M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4") },
+  search_transfers: { label: "Transfer search", icon: icon("M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2M6.5 18.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM16.5 18.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z") },
+  search_activities: { label: "Activity search", icon: icon("M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2ZM13 5v2M13 17v2M13 11v2") },
+  check_flight: { label: "Flight check", icon: icon("M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1zM9 12l2 2 4-4") },
+  check_hotel: { label: "Hotel check", icon: icon("M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1zM9 12l2 2 4-4") },
+  check_activity: { label: "Activity check", icon: icon("M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1zM9 12l2 2 4-4") },
+  price_quote: { label: "Client pricing", icon: icon("M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1ZM16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 17.5v-11") },
+};
+
+// The client's copy drops the "(CPN 03)" citations; they are for the agent.
+const stripCites = (md) => md.replace(/\s*\(CPN[^)]*\)/g, "").replace(/\bCPN \d{2}(?:[–-]\d{2})?\b/g, "");
+
+const sunIcon = html`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`;
+const moonIcon = html`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401"/></svg>`;
+// OpenRouter's free models: their providers may log prompts for training, and they're rate-limited.
+const isFree = (provider, model, freeModels) => provider === "openrouter" && !!model
+  && (model.endsWith(":free") || (freeModels || []).includes(model));
+const chevron = html`<svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M3.5 2 6.5 5l-3 3" /></svg>`;
+
+const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const day = (iso) => { const d = new Date(iso + (iso.length === 10 ? "T00:00" : "")); return isNaN(d) ? iso : `${String(d.getDate()).padStart(2, "0")}${MONTHS[d.getMonth()]}`; };
+const time = (iso) => iso.slice(11, 16).replace(":", "");
+const usd = (n) => `$${Number(n).toLocaleString()}`;
+const cpn = (n) => String(n).padStart(2, "0");
+
+function routeLine({ name, input }) {
+  if (name === "search_flights") return `${input.origin}→${input.destination} · ${day(input.date || "")}`;
+  if (name === "search_hotels") return `${input.city} · ${day(input.check_in || "")} · ${input.nights} NTS${input.max_price_per_night ? ` · ≤${usd(input.max_price_per_night)}` : ""}`;
+  if (name === "check_flight") return `${input.flight_number} ${input.origin}→${input.destination} · ${day(input.date || "")}`;
+  if (name === "check_hotel") return `${input.name} · ${day(input.check_in || "")} · ${input.nights} NTS`;
+  if (name === "check_activity") return `${input.name} · ${day(input.date || "")}`;
+  if (name === "search_transfers") return `${input.airport}→HOTEL · ${day(input.pickup_datetime || "")} ${time(input.pickup_datetime || "")} · ${input.adults ?? 2} PAX`;
+  if (name === "search_activities") return `${input.destination_code} · ${day(input.from_date || "")}–${day(input.to_date || "")}`;
+  if (name === "convert_currency") return `${input.amount} ${input.from_currency}→${input.to_currency}`;
+  if (name === "price_quote") return `${input.items?.length ?? 0} ITEMS · USD→${input.currency || "ETB"}`;
+  return Object.values(input).join(" · ");
+}
+
+function parse(output) { try { return JSON.parse(output); } catch { return null; } }
+
+// Where each search's data came from, so no price is ever passed off as more real than it is.
+// Verdicts are decided server-side; the UI only names them.
+const VERDICT = {
+  verified: () => "VERIFIED",
+  price_off: (d) => `PRICE OFF ${d.diff_pct > 0 ? "+" : ""}${d.diff_pct}% · PLAN ${usd(d.claimed_usd)} · ACTUAL ${usd(d.supplier_usd)}`,
+  name_mismatch: () => "NAME MISMATCH",
+  unavailable: () => "UNAVAILABLE ON THESE DATES",
+  not_found: () => "NOT FOUND AT SUPPLIER",
+  unchecked: () => "NOT CHECKED · NO SUPPLIER",
+};
+const verdictOf = (step) => { const d = step.output && !step.is_error && parse(step.output); return d?.verdict; };
+
+const SOURCE_LABEL = { "hotelbeds-test": "HOTELBEDS TEST", "duffel-test": "DUFFEL TEST", duffel: "DUFFEL LIVE", "liteapi-sandbox": "LITEAPI SANDBOX", liteapi: "LITEAPI", demo: "DEMO DATA", unchecked: "NONE CONNECTED" };
+const sourceOf = (step) => { const d = step.output && !step.is_error && parse(step.output); return Array.isArray(d) ? d[0]?.source : d?.source; };
+function faresLabel(steps) {
+  const sources = [...new Set(steps.map(sourceOf).filter((x) => x && x !== "unchecked"))];
+  const demo = sources.filter((x) => x === "demo").length, sandbox = sources.filter((x) => /test|sandbox/.test(x)).length;
+  if (!sources.length || demo === sources.length) return "DEMO FARES";
+  if (demo) return "SANDBOX + DEMO FARES";
+  return sandbox ? "SANDBOX FARES" : "LIVE FARES";
+}
+
+function statusLine(step) {
+  if (step.output == null) return "ISSUING…";
+  if (step.is_error) return `VOID · ${step.output}`;
+  const data = parse(step.output);
+  if (Array.isArray(data)) {
+    if (!data.length) return "NO RESULTS";
+    if (step.name === "search_flights") return `${data.length} FARES · FROM ${usd(data[0].price_usd)}`;
+    if (step.name === "search_transfers") return `${data.length} OPTIONS · FROM ${usd(data[0].price_usd)} ONE WAY`;
+    if (step.name === "search_activities") return `${data.length} ACTIVITIES · FROM ${usd(data[0].price_per_adult_usd)}/ADULT`;
+    return `${data.length} PROPERTIES · FROM ${usd(data[0].price_per_night_usd)}/NT`;
+  }
+  if (data?.amount != null) return `= ${Math.round(data.amount).toLocaleString()} ${data.currency}`;
+  if (data?.verdict) return VERDICT[data.verdict]?.(data) ?? data.verdict.toUpperCase();
+  if (data?.client_total_usd != null) return `CLIENT ${usd(data.client_total_usd)} · +${data.markup_pct}% MARKUP`;
+  return "ISSUED";
+}
+
+function Results({ step }) {
+  const data = parse(step.output);
+  if (step.name === "price_quote" && data?.lines) {
+    return html`<details><summary>${chevron}Show net vs client</summary>
+      <table class="fares"><tbody>${data.lines.map((l, i) => html`<tr key=${i}><td>${l.label}</td><td>NET ${usd(l.net_usd)}</td><td>${usd(l.client_usd)}</td></tr>`)}</tbody></table></details>`;
+  }
+  if (!Array.isArray(data) || !data.length) return null;
+  const thumb = (photo, name) => (photo ? html`<span class="hotel"><img src=${photo} alt="" loading="lazy" width="36" height="28" />${name}</span>` : name);
+  const rows = step.name === "search_transfers"
+    ? data.map((t) => [`${t.type === "shared" ? "Shared" : "Private"} ${t.vehicle.toLowerCase()}, ${t.category.toLowerCase()}`, `UP TO ${t.max_passengers}`,
+        t.free_cancellation_until ? `FREE CXL TO ${day(t.free_cancellation_until)}` : "—", usd(t.price_usd)])
+    : step.name === "search_activities"
+    ? data.map((a) => [thumb(a.photo, a.name), a.duration_h ? `${a.duration_h}H` : "—", "", `${usd(a.price_per_adult_usd)}/AD`])
+    : step.name === "search_flights"
+    ? data.map((f) => [`${f.flight} ${f.airline}`, `${day(f.depart)} ${time(f.depart)}`, f.stops ? `${f.stops} STOP` : "NONSTOP", usd(f.price_usd)])
+    : data.map((h) => [
+        thumb(h.photo, h.name),
+        `${h.stars ? `${h.stars}★` : "—"} ${h.guest_rating ?? ""}`, h.free_cancellation ? "FREE CXL" : "NON-REF", `${usd(h.price_per_night_usd)}/NT`]);
+  const noun = { search_flights: "fares", search_transfers: "transfers", search_activities: "activities" }[step.name] || "properties";
+  return html`<details><summary>${chevron}Show ${data.length} ${noun}</summary>
+    <table class="fares"><tbody>${rows.map((r, i) => html`<tr key=${i}>${r.map((c, j) => html`<td key=${j}>${c}</td>`)}</tr>`)}</tbody></table></details>`;
+}
+
+function Coupon({ step }) {
+  const tool = TOOLS[step.name] || { label: step.name, icon: null };
+  const verdict = verdictOf(step);
+  const state = step.output == null ? "live" : step.is_error ? "err" : verdict && verdict !== "verified" ? "done flag" : "done";
+  return html`<article class=${`coupon ${state}`} aria-label=${`Coupon ${cpn(step.coupon)}, ${tool.label}`}>
+    <div class="num"><small>CPN</small>${cpn(step.coupon)}</div>
+    <div class="body">
+      <div class="title">${tool.icon}${step.name}</div>
+      <div class="route mono">${routeLine(step)}</div>
+      <div class="status" role=${state === "live" ? "status" : undefined}>${statusLine(step)}</div>
+      ${sourceOf(step) && html`<div class="source">SOURCE: ${SOURCE_LABEL[sourceOf(step)] || sourceOf(step).toUpperCase()}</div>`}
+      ${verdict && html`<div class="reason">${parse(step.output).reason}</div>`}
+      ${state.startsWith("done") && !verdict && html`<${Results} step=${step} />`}
+    </div>
+  </article>`;
+}
+
+function Stub({ msg, busy, printable }) {
+  const flights = msg.steps.filter((s) => (s.name === "search_flights" || s.name === "check_flight") && s.input.origin);
+  const checks = msg.steps.map(verdictOf).filter(Boolean);
+  const first = flights[0]?.input;
+  const roundTrip = first && flights.some((f) => f.input.origin === first.destination);
+  const dates = [...new Set(flights.map((f) => f.input.date))].sort();
+  const coupons = msg.steps.filter((s) => s.kind === "tool").length;
+  // The fare box prints the client total from the turn's last price_quote coupon.
+  const pq = [...msg.steps].reverse().find((s) => s.name === "price_quote" && s.output && !s.is_error);
+  const quote = pq && parse(pq.output);
+  const state = msg.error ? "err" : busy ? "live" : "";
+  return html`<aside class="stub mono" aria-label="Proposal summary">
+    ${quote && html`<div class="total"><span>TOTAL</span>
+      <span class="big">${usd(quote.client_total_usd)}</span>
+      <span class="alt">${quote.client_total_local.currency} ${Math.round(quote.client_total_local.amount).toLocaleString()}</span>
+      <span class="net agent-only">NET ${usd(quote.net_total_usd)} · +${quote.markup_pct}% · CPN ${cpn(pq.coupon)}</span></div>`}
+    <dl>
+      <div><dt>ROUTE</dt><dd>${first ? `${first.origin} ${roundTrip ? "⇄" : "→"} ${first.destination}` : "—"}</dd></div>
+      <div><dt>DATES</dt><dd>${dates.length ? dates.map(day).join("–") : "—"}</dd></div>
+      ${checks.length > 0 && html`<div class="agent-only"><dt>PLAN CHECK</dt><dd>${checks.filter((v) => v === "verified").length} OF ${checks.length} VERIFIED</dd></div>`}
+      <div class="agent-only"><dt>COUPONS</dt><dd>${coupons ? `CPN 01–${cpn(coupons)}` : "—"}</dd></div>
+      ${msg.usage && html`<div class="agent-only"><dt>MODEL TOKENS</dt><dd>${(msg.usage.input_tokens + msg.usage.output_tokens).toLocaleString()}</dd></div>`}
+    </dl>
+    <div class=${`issued ${state}`}>${msg.error ? "NOT ISSUED" : busy ? "ISSUING…" : `ISSUED · ${faresLabel(msg.steps)}`}</div>
+    ${printable && html`<button class="btn-ghost btn-print agent-only" onClick=${() => window.print()}>Print client quote</button>`}
+  </aside>`;
+}
+
+function Intro({ onPick, inventory, model }) {
+  const briefs = BRIEFS[inventory?.edition] || [];
+  return html`<section class="ticket intro">
+    <div class="main">
+      <h1>Turn a client brief into a priced proposal.</h1>
+      <p>Safar searches flights and hotels, applies your markup and drafts a day-by-day quote you can print for the client. Paste a plan a client got from ChatGPT and Safar checks every flight, hotel and activity against live suppliers first. Each lookup is issued as a numbered coupon, and the quote cites those numbers, so you can check every price.</p>
+      <div class="briefs" role="list">
+        ${briefs.map((b, i) => html`<button key=${i} role="listitem" onClick=${() => onPick(b.text)}>
+          <span class="text">${b.audit && html`<span class="tag">PLAN CHECK</span>`}${b.label || b.text}</span>
+          <span class="use">${b.audit ? "Check this plan" : "Use this brief"}</span></button>`)}
+      </div>
+    </div>
+    <aside class="stub mono how">
+      <dl>
+        <div><dt>TOOLS</dt><dd>Flights · Hotels · Transfers · Activities · FX · Pricing</dd></div>
+        <div><dt>MODEL</dt><dd>${model || "Claude"}, tool use</dd></div>
+        <div><dt>INVENTORY</dt><dd>${inventory?.flights && inventory.flights !== "demo"
+          ? "Supplier sandboxes: Duffel flights, LiteAPI hotels, Hotelbeds transfers and activities. Realistic prices, not bookable."
+          : "Demo data. Fares and hotels are generated, not live."}</dd></div>
+      </dl>
+      <div class="issued">NOT YET ISSUED</div>
+    </aside>
+  </section>`;
+}
+
+
+// Model settings: pick the provider and model the agent runs on. Keys are saved on the server (only from the
+// computer running Safar) and never come back to the browser; the panel only learns whether one is on file.
+function Settings({ data, selection, onApply, onSaved, onClose, startsNewTrip }) {
+  const [pid, setPid] = useState(selection.provider);
+  const [model, setModel] = useState(selection.model);
+  const [key, setKey] = useState("");
+  const [url, setUrl] = useState("");
+  const [note, setNote] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [checking, setChecking] = useState(false);
+  // OpenRouter models are checked before switching: the agent needs a live provider that accepts tool calls.
+  async function use() {
+    setNote(null);
+    setChecking(true);
+    const check = await fetch(`/api/model-check?provider=${pid}&model=${encodeURIComponent(model)}`)
+      .then((r) => r.json()).catch(() => ({ ok: true }));
+    setChecking(false);
+    if (check.ok === false) return setNote({ ok: false, text: check.reason || "That model can't run the agent." });
+    onApply({ provider: pid, model }, p.kind);
+  }
+  const p = data.providers.find((x) => x.id === pid) || data.providers[0];
+  const choose = (id) => {
+    const next = data.providers.find((x) => x.id === id);
+    setPid(id); setKey(""); setUrl(""); setNote(null);
+    const pickFromList = next?.kind === "anthropic" || next?.id === "ollama" || next?.id === "lmstudio";
+    // Short lists start on their first model; OpenRouter's hundreds (and Azure/custom names) start empty to search.
+    setModel(id === selection.provider ? selection.model : pickFromList ? next.models?.[0] || "" : "");
+  };
+  const listOnly = p.kind === "anthropic" || p.id === "ollama" || p.id === "lmstudio";
+
+  async function save() {
+    setSaving(true); setNote(null);
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-Safar-Settings": "1" },
+        body: JSON.stringify({ provider: pid, ...(key ? { api_key: key } : {}), ...(url ? { base_url: url } : {}) }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.detail || `The server returned ${res.status}.`);
+      setKey(""); setUrl("");
+      setNote({ ok: true, text: "Saved on this computer. It is never shown again." });
+      onSaved(body);
+    } catch (e) {
+      setNote({ ok: false, text: e.message });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return html`<section class="settings" aria-label="Model settings">
+    <div class="settings-head"><h2>Model</h2><button class="btn-link" onClick=${onClose}>Close</button></div>
+    <p class="settings-lede">Prices, markup and plan-check verdicts are computed in code, so the model changes the writing, never a number.</p>
+    <label class="field"><span>Provider</span>
+      <select value=${pid} onChange=${(e) => choose(e.target.value)}>
+        ${data.providers.map((x) => html`<option key=${x.id} value=${x.id}>${x.label}${x.ready ? "" : " · not set up"}</option>`)}
+      </select></label>
+    ${p.hint && html`<p class="settings-hint">${p.hint}</p>`}
+    <label class="field"><span>Model</span>
+      ${listOnly
+        ? html`<select value=${model} onChange=${(e) => setModel(e.target.value)} disabled=${!p.models?.length}>
+            ${(p.models || []).map((m) => html`<option key=${m} value=${m}>${m}</option>`)}</select>`
+        : html`<input value=${model} onInput=${(e) => setModel(e.target.value.trim())} list="model-list" spellcheck="false"
+            placeholder=${p.id === "openrouter" ? "Search, e.g. anthropic/ or qwen/" : "Deployment or model name"} />
+            <datalist id="model-list">${(p.models || []).map((m) => html`<option key=${m} value=${m} />`)}</datalist>`}</label>
+    ${(p.needs_key || p.needs_url) && (data.editable
+      ? html`<div class="settings-keys">
+          ${p.needs_url && html`<label class="field"><span>Base URL ${p.has_url ? html`<em>on file</em>` : ""}</span>
+            <input value=${url} onInput=${(e) => setUrl(e.target.value.trim())} placeholder="https://…/v1" spellcheck="false" /></label>`}
+          ${p.needs_key && html`<label class="field"><span>API key ${p.has_key ? html`<em>on file</em>` : ""}</span>
+            <input type="password" value=${key} onInput=${(e) => setKey(e.target.value.trim())} autocomplete="off"
+              placeholder=${p.has_key ? "Paste a new key to replace it" : "Paste your key"} /></label>`}
+          <button class="btn-ghost" onClick=${save} disabled=${saving || (!key && !url)}>${saving ? "Saving…" : "Save on this computer"}</button>
+        </div>`
+      : html`<p class="settings-hint">Keys can only be added on the computer running Safar.</p>`)}
+    ${note && html`<p class=${note.ok ? "settings-ok" : "settings-err"} role="status">${note.text}</p>`}
+    ${isFree(p.id, model, p.free_models) && html`<div class="free-warning" role="note">
+      <strong>Free model</strong>
+      <ul>
+        <li><b>Prompts may be logged and used for training.</b> Fine for demos and sample briefs, but don't enter real client names, passport details or itineraries.</li>
+        <li><b>Rate-limited.</b> It can pause or refuse during a busy demo. Keep a paid model ready as a backup, e.g. anthropic/claude-haiku-5.5, a fraction of a cent per brief.</li>
+      </ul>
+    </div>`}
+    <div class="settings-actions">
+      <button class="btn-primary" disabled=${!p.ready || !model || checking} onClick=${use}>${checking ? "Checking…" : "Use this model"}</button>
+      ${startsNewTrip(p.kind) && html`<span class="settings-hint">Switching to ${p.label} starts a new trip.</span>`}
+    </div>
+  </section>`;
+}
+
+function App() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [inventory, setInventory] = useState(null);
+  const [providers, setProviders] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const dialogRef = useRef(null);
+  useEffect(() => {  // the native dialog gives Escape, focus trapping and a backdrop for free
+    const d = dialogRef.current;
+    if (showSettings && d && !d.open) {
+      d.showModal();
+      d.querySelector("select")?.focus();  // start on the provider choice, not on Close
+    }
+  }, [showSettings, providers]);
+  const [theme, setTheme] = useState(() => document.documentElement.dataset.theme
+    || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"));
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("safar.theme", next); } catch {}
+    setTheme(next);
+  };
+  const [selection, setSelection] = useState(() => { try { return JSON.parse(localStorage.getItem("safar.model")); } catch { return null; } });
+  const loadProviders = () => fetch("/api/providers").then((r) => r.json()).then((d) => {
+    setProviders(d);
+    setSelection((sel) => (sel && d.providers.some((x) => x.id === sel.provider) ? sel : d.default));
+  }).catch(() => {});
+  useEffect(() => { loadProviders(); }, []);
+  useEffect(() => { try { if (selection) localStorage.setItem("safar.model", JSON.stringify(selection)); } catch {} }, [selection]);
+  const kindOf = (pid) => providers?.providers.find((x) => x.id === pid)?.kind;
+  useEffect(() => { fetch("/api/status").then((r) => r.json()).then(setInventory).catch(() => {}); }, []);
+  const [markup, setMarkup] = useState(() => { try { return localStorage.getItem("safar.markup") ?? "10"; } catch { return "10"; } });
+  const session = useRef(null);
+  const abort = useRef(null);
+  const logRef = useRef(null);
+  const railRef = useRef(null);
+
+  useEffect(() => {
+    if (!messages.length) return; // keep the intro scrolled to its headline
+    logRef.current?.scrollTo({ top: logRef.current.scrollHeight });
+    railRef.current?.scrollTo({ top: railRef.current.scrollHeight, left: railRef.current.scrollWidth });
+  }, [messages]);
+
+  useEffect(() => { try { localStorage.setItem("safar.markup", markup); } catch {} }, [markup]);
+  // The agency's quoting currency: one of the edition's currencies, remembered per browser.
+  const [currency, setCurrency] = useState(() => { try { return localStorage.getItem("safar.currency"); } catch { return null; } });
+  const currencies = inventory?.currencies || [];
+  const quoteIn = currencies.includes(currency) ? currency : currencies[0];
+  useEffect(() => { try { if (quoteIn) localStorage.setItem("safar.currency", quoteIn); } catch {} }, [quoteIn]);
+
+  // Every event of a turn updates that turn's assistant message (always the last one).
+  const updateTurn = (fn) => setMessages((m) => [...m.slice(0, -1), fn(m[m.length - 1])]);
+
+  function handle({ type, data }) {
+    if (type === "session") session.current = data;
+    else if (type === "text") updateTurn((t) => ({ ...t, text: t.text + data }));
+    else if (type === "thinking") updateTurn((t) => {
+      const last = t.steps[t.steps.length - 1];
+      const steps = last?.kind === "notes" ? [...t.steps.slice(0, -1), { ...last, text: last.text + data }] : [...t.steps, { kind: "notes", text: data }];
+      return { ...t, steps };
+    });
+    else if (type === "tool_call") updateTurn((t) => ({ ...t, text: t.text && !t.text.endsWith("\n\n") ? t.text + "\n\n" : t.text, steps: [...t.steps, { kind: "tool", ...data }] }));
+    else if (type === "tool_result") updateTurn((t) => ({ ...t, steps: t.steps.map((s) => (s.id === data.id ? { ...s, ...data } : s)) }));
+    else if (type === "done") updateTurn((t) => ({ ...t, usage: data }));
+    else if (type === "error") updateTurn((t) => ({ ...t, error: data }));
+  }
+
+  async function send(text) {
+    if (!text.trim() || busy) return;
+    setInput(""); setBusy(true);
+    setMessages((m) => [...m, { role: "user", text }, { role: "assistant", text: "", steps: [], usage: null, error: null }]);
+    abort.current = new AbortController();
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: session.current, message: text, currency: quoteIn,
+                               provider: selection?.provider, model: selection?.model,
+                               markup_pct: Math.min(100, Math.max(0, Number(markup) || 0)) }),
+        signal: abort.current.signal,
+      });
+      if (!res.ok) {
+        const detail = await res.json().then((b) => (typeof b.detail === "string" ? b.detail : null)).catch(() => null);
+        throw new Error(res.status === 422 ? "That brief is empty or too long (4,000 characters max)." : detail || `The server returned ${res.status}. Try again.`);
+      }
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buf = "";
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += value;
+        let i;
+        while ((i = buf.indexOf("\n\n")) >= 0) {
+          const line = buf.slice(0, i);
+          buf = buf.slice(i + 2);
+          if (line.startsWith("data: ")) handle(JSON.parse(line.slice(6)));
+        }
+      }
+    } catch (e) {
+      updateTurn((t) => ({ ...t, error: e.name === "AbortError" ? "Stopped. This request was not added to the trip." : e.message || "Connection lost. Try again." }));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function newTrip() {
+    session.current = null;
+    setMessages([]);
+    setInput("");
+  }
+
+  const turns = messages.filter((m) => m.role === "assistant");
+
+  return html`
+    <header>
+      <a class="logo" href="/">Safar</a>
+      <span class="desk">Agency trip desk</span>
+      <div class="head-right">
+        ${currencies.length > 1 && html`<label class="markup"><span class="markup-label">Quote in</span>
+          <select aria-label="Quoting currency" value=${quoteIn} onChange=${(e) => setCurrency(e.target.value)}>
+            ${currencies.map((c) => html`<option key=${c} value=${c}>${{ USD: "US$", CAD: "CA$", GBP: "£", ETB: "ETB" }[c] || c}</option>`)}
+          </select></label>`}
+        <label class="markup"><span class="markup-label">Markup</span>
+          <input type="number" min="0" max="100" step="0.5" inputmode="decimal" aria-label="Agency markup, percent" value=${markup} onInput=${(e) => setMarkup(e.target.value)} /><span aria-hidden="true">%</span></label>
+        ${inventory && ["flights", "hotels", "transfers", "activities"].some((k) => inventory[k] && inventory[k] !== "demo")
+          ? html`<span class="mono demo-tag">SANDBOX<span class="demo-more"> SUPPLIERS</span></span>`
+          : html`<span class="mono demo-tag">DEMO<span class="demo-more"> INVENTORY</span></span>`}
+        <button class="btn-ghost btn-model" aria-expanded=${showSettings} onClick=${() => setShowSettings(true)}
+          title="Choose the model">${selection ? selection.model : "Model"}</button>
+        <button class="btn-ghost btn-icon" onClick=${toggleTheme} aria-label=${theme === "dark" ? "Switch to light theme" : "Switch to dark theme"}
+          title=${theme === "dark" ? "Light theme" : "Dark theme"}>${theme === "dark" ? sunIcon : moonIcon}</button>
+        <button class="btn-ghost" onClick=${newTrip} disabled=${busy || !messages.length}>New trip</button>
+      </div>
+    </header>
+    <dialog class="settings-dialog" ref=${dialogRef} aria-label="Model settings"
+      onClose=${() => setShowSettings(false)}
+      onClick=${(e) => { if (e.target === dialogRef.current) dialogRef.current.close(); }}>
+      ${showSettings && providers && selection && html`<${Settings} data=${providers} selection=${selection}
+        onClose=${() => dialogRef.current?.close()}
+        onSaved=${(state) => setProviders((d) => ({ ...d, providers: d.providers.map((x) => (x.id === state.id ? state : x)) }))}
+        startsNewTrip=${(kind) => messages.length > 0 && kind !== kindOf(selection.provider)}
+        onApply=${(sel, kind) => { if (messages.length && kind !== kindOf(selection.provider)) newTrip(); setSelection(sel); dialogRef.current?.close(); }} />`}
+    </dialog>
+    <main>
+      <div class="log" ref=${logRef} aria-live="polite">
+        ${messages.length === 0 ? html`<${Intro} onPick=${send} inventory=${inventory} model=${selection?.model} />` : messages.map((m, i) => m.role === "user"
+          ? html`<div key=${i} class="brief">${m.text}</div>`
+          : html`<section key=${i} class=${`ticket${i === messages.length - 1 ? " latest" : ""}`}>
+              <div class="main">
+                <div class="print-only print-head">TRIP PROPOSAL · ${new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase()}</div>
+                ${m.text
+                  ? html`<div class="proposal screen" dangerouslySetInnerHTML=${{ __html: DOMPurify.sanitize(marked.parse(m.text)) }} />
+                      <div class="proposal print-only" dangerouslySetInnerHTML=${{ __html: DOMPurify.sanitize(marked.parse(stripCites(m.text))) }} />`
+                  : !m.error && html`<div class="pending">${m.steps.some((s) => s.kind === "tool") ? "Searching inventory…" : "Reading the brief…"}</div>`}
+                ${m.error && html`<div class="void" role="alert"><span class="mono">VOID</span>${m.error}</div>`}
+              </div>
+              <${Stub} msg=${m} busy=${busy && i === messages.length - 1} printable=${!busy && !m.error && !!m.text && i === messages.length - 1} />
+            </section>`)}
+      </div>
+
+      <aside class="rail" ref=${railRef} aria-label="Coupons issued by the agent">
+        <h2>Coupons</h2>
+        <p class="lede">Every lookup the agent makes, in order. Prices in the quote cite these numbers.</p>
+        <div class="rail-inner">
+          ${turns.length === 0 && html`<div class="placeholder"><span class="num">CPN —</span><span>No coupons yet. Pick a brief and each search appears here as it runs.</span></div>`}
+          ${turns.map((t, i) => html`<section key=${i} class="request">
+            <div class="request-head"><span>Request ${i + 1}</span><span>${t.steps.filter((s) => s.kind === "tool").length} coupons</span></div>
+            <div class="stack">
+              ${t.steps.map((s, j) => s.kind === "notes"
+                ? html`<div key=${j} class="notes"><span class="label">Agent notes</span><p>${s.text}</p></div>`
+                : html`<${Coupon} key=${s.id} step=${s} />`)}
+            </div>
+            ${t.usage && html`<div class="usage mono">${t.usage.input_tokens.toLocaleString()} IN · ${t.usage.output_tokens.toLocaleString()} OUT TOKENS (LAST CALL)</div>`}
+          </section>`)}
+        </div>
+      </aside>
+
+      <form class="compose" onSubmit=${(e) => { e.preventDefault(); send(input); }}>
+        <div>
+          <label class="sr-only" for="brief">Client brief</label>
+          <textarea id="brief" rows="2" maxlength="4000" placeholder=${messages.length ? "Refine: cheaper hotel, new dates…" : "Paste a client brief: who, where, when, budget"} value=${input}
+            onInput=${(e) => setInput(e.target.value)}
+            onKeyDown=${(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input); } }}></textarea>
+          ${busy
+            ? html`<button type="button" class="btn-primary btn-stop" onClick=${() => abort.current?.abort()}>Stop</button>`
+            : html`<button type="submit" class="btn-primary" disabled=${!input.trim()}>Send</button>`}
+        </div>
+        ${selection && isFree(selection.provider, selection.model, providers?.providers.find((x) => x.id === "openrouter")?.free_models)
+          && html`<p class="free-note"><b>Free model:</b> prompts may be logged. Don't enter real client details.</p>`}
+      </form>
+    </main>`;
+}
+
+createRoot(document.getElementById("root")).render(html`<${App} />`);
+</script>
+</body>
+</html>

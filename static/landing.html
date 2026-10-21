@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try { const t = localStorage.getItem("safar.theme"); if (t) document.documentElement.dataset.theme = t; } catch {}</script>
+<title>Safar · Quotes your clients can trust</title>
+<meta name="description" content="Safar is an AI copilot for travel agents. It turns a client brief into a priced, day-by-day proposal, and shows the source of every price.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=Martian+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="%%HERO_2400%%" imagesrcset="%%HERO_1200%% 1200w, %%HERO_2400%% 2400w" imagesizes="100vw">
+<style>
+  :root {
+    color-scheme: light;
+    --ground: #f7f8f4; --stock: #dcebe1; --rail: #eaf1ea; --paper: #fff;
+    --ink: #1c2a44; --ink-2: #44526b; --rule: #a9c3b2; --carbon: #b3352b; --carbon-deep: #962a21;
+    --carbon-fill: #b3352b; --hood: #1c2a44;  /* the dark band stays dark in both themes */
+    --mono: "Martian Mono", ui-monospace, monospace;
+    --sans: "Archivo", system-ui, sans-serif;
+    --ease: cubic-bezier(.16, 1, .3, 1);
+    --gutter: clamp(16px, 4vw, 56px);
+  }
+  /* Same choice as the trip desk: the system's, unless the viewer picked one there */
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { color-scheme: dark;
+      --ground: #10151d; --stock: #1b2a28; --rail: #141b22; --paper: #18202a;
+      --ink: #e3e9e4; --ink-2: #a3b0bd; --rule: #3a4d47; --carbon: #ff7a62; --hood: #0b1017; } }
+  :root[data-theme="dark"] { color-scheme: dark;
+      --ground: #10151d; --stock: #1b2a28; --rail: #141b22; --paper: #18202a;
+      --ink: #e3e9e4; --ink-2: #a3b0bd; --rule: #3a4d47; --carbon: #ff7a62; --hood: #0b1017; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 400 17px/1.6 var(--sans); }
+  ::selection { background: var(--ink); color: var(--stock); }
+  :focus-visible { outline: 2px solid var(--carbon); outline-offset: 3px; }
+  a { color: inherit; text-underline-offset: 3px; }
+  .mono { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+
+  /* Buttons: square, like everything else on a ticket */
+  .btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font: 600 17px/1 var(--sans); padding: 18px 26px; border: 0; cursor: pointer; transition: background .2s, color .2s; }
+  .btn-primary { background: var(--carbon-fill); color: #fff; }
+  .btn-primary:hover { background: var(--carbon-deep); }
+  .btn-primary svg { transition: transform .25s var(--ease); }
+  .btn-primary:hover svg { transform: translateX(4px); }
+  .btn-quiet { color: #fff; padding-inline: 4px; text-decoration: underline; text-decoration-color: rgba(255,255,255,.5); }
+  .btn-quiet:hover { text-decoration-color: #fff; }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; min-height: min(100svh, 1100px); display: grid; grid-template-rows: auto 1fr; color: #fff; overflow: hidden; background: #1c2a44; isolation: isolate; }
+  .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: %%HERO_POS%%; z-index: -2; animation: settle 2.4s var(--ease) both; }
+  /* Scrim only where the type sits: the dark hills at the bottom */
+  .hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(28,42,68,.45) 0%, rgba(28,42,68,0) 22%, rgba(28,42,68,0) 45%, rgba(28,42,68,.72) 82%, rgba(28,42,68,.88) 100%); }
+  nav { display: flex; align-items: center; gap: 24px; padding: 22px var(--gutter); }
+  .logo { font: 800 24px/1 var(--sans); letter-spacing: -.02em; color: #fff; text-decoration: none; }
+  nav .links { margin-left: auto; display: flex; align-items: center; gap: 22px; font-weight: 500; font-size: 15px; }
+  nav .links a { text-decoration: none; }
+  nav .links a:hover { text-decoration: underline; }
+  nav .open { border: 1.5px solid #fff; padding: 9px 16px; font-weight: 600; }
+  nav .open:hover { background: #fff; color: var(--ink); text-decoration: none !important; }
+
+  .hero-body { align-self: end; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 40px; padding: 0 var(--gutter) clamp(36px, 6vh, 72px); }
+  .hero h1 { margin: 0 0 22px; font: 800 clamp(48px, 8.4vw, 124px)/.94 var(--sans); letter-spacing: -.04em; text-wrap: balance; max-width: 11ch; }
+  .hero .sub { margin: 0 0 30px; max-width: 46ch; font-size: clamp(17px, 1.5vw, 20px); color: rgba(255,255,255,.9); }
+  .hero .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 26px; }
+
+  /* The proof: a real ticket stub from a sample run, sitting on the photo */
+  .sample { width: 300px; color: var(--ink); animation: issue .9s .5s var(--ease) both; }
+  /* Real notches: half-circles cut out of both halves at the perforation, so the photo shows through */
+  .sample .top, .sample .bottom { background: var(--stock); }
+  .sample .top { padding: 18px 20px 16px;
+    -webkit-mask: radial-gradient(circle 10px at 0 100%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 100%, #0000 98%, #000) right / 51% 100% no-repeat;
+            mask: radial-gradient(circle 10px at 0 100%, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 100%, #0000 98%, #000) right / 51% 100% no-repeat; }
+  .sample .bottom { padding: 14px 20px 18px; border-top: 2px dashed var(--ink);
+    -webkit-mask: radial-gradient(circle 10px at 0 0, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 0, #0000 98%, #000) right / 51% 100% no-repeat;
+            mask: radial-gradient(circle 10px at 0 0, #0000 98%, #000) left / 51% 100% no-repeat, radial-gradient(circle 10px at 100% 0, #0000 98%, #000) right / 51% 100% no-repeat; }
+  .sample .route { font: 600 22px/1.2 var(--mono); }
+  .sample dt { color: var(--ink-2); }
+  .sample dl { margin: 12px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .sample dd { margin: 2px 0 0; font: 600 13px var(--mono); }
+  .sample .total { font: 800 34px/1 var(--sans); letter-spacing: -.02em; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .sample .etb { font: 600 14px var(--mono); margin-top: 6px; }
+  .sample .tag { display: block; margin-top: 12px; color: var(--ink-2); }
+
+  /* ---------- How it works ---------- */
+  section { padding: clamp(72px, 11vw, 140px) var(--gutter); }
+  .how { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(40px, 6vw, 96px); align-items: start; max-width: 1320px; margin: 0 auto; }
+  h2 { font: 800 clamp(34px, 4.6vw, 64px)/1 var(--sans); letter-spacing: -.035em; margin: 0 0 22px; text-wrap: balance; }
+  .how .intro { position: sticky; top: 48px; }
+  .how .intro p { color: var(--ink-2); max-width: 44ch; margin: 0 0 28px; }
+  .coupons { display: grid; gap: 14px; }
+  .coupon { display: grid; grid-template-columns: 84px minmax(0, 1fr); background: var(--paper); border: 1.5px solid var(--ink); }
+  .coupon .num { display: grid; place-items: center; align-content: center; gap: 4px; background: var(--ink); color: var(--stock); border-right: 2px dashed var(--stock); font: 600 22px/1 var(--mono); }
+  .coupon .num small { font-size: 10px; letter-spacing: .12em; }
+  .coupon .body { padding: 20px 22px 22px; }
+  .coupon h3 { margin: 0 0 6px; font: 800 22px/1.2 var(--sans); letter-spacing: -.01em; }
+  .coupon p { margin: 0; color: var(--ink-2); max-width: 52ch; }
+  .coupon .code { display: block; margin-top: 12px; color: var(--ink); }
+  .coupon.live { border-color: var(--carbon); }
+  .coupon.live .num { background: var(--carbon-fill); color: #fff; }
+
+  /* ---------- Under the hood ---------- */
+  .hood { background: var(--hood); color: #fff; }
+  .hood-inner { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(40px, 6vw, 96px); }
+  .hood h2 { color: #fff; }
+  .hood .lede { color: #dcebe1; max-width: 44ch; margin: 0; }
+  .specs { margin: 0; display: grid; }
+  .specs div { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 24px; padding: 20px 0; border-top: 1px solid rgba(220,235,225,.25); }
+  .specs div:last-child { border-bottom: 1px solid rgba(220,235,225,.25); }
+  .specs dt { font: 600 13px/1.5 var(--mono); color: #dcebe1; }
+  .specs dd { margin: 0; color: #fff; }
+
+  /* ---------- Close ---------- */
+  .close { text-align: center; }
+  .close h2 { max-width: 16ch; margin-inline: auto; }
+  .close p { color: var(--ink-2); margin: 0 auto 32px; max-width: 52ch; }
+  footer { padding: 28px var(--gutter) 36px; border-top: 2px solid var(--ink); display: flex; flex-wrap: wrap; gap: 10px 28px; justify-content: space-between; color: var(--ink-2); font-size: 14px; }
+
+  @keyframes settle { from { transform: scale(1.08); } to { transform: none; } }
+  @keyframes issue { from { clip-path: inset(0 0 0 100%); transform: translateX(16px); } to { clip-path: inset(0 0 0 0); transform: none; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+  @media (max-width: 900px) {
+    nav .links .hide-sm { display: none; }
+    .hero-body { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-top: 24px; }
+    /* On phones the type sits over the bright sky, so the whole photo gets the scrim */
+    .hero::after { background: linear-gradient(180deg, rgba(28,42,68,.62) 0%, rgba(28,42,68,.55) 45%, rgba(28,42,68,.85) 100%); }
+    .sample { width: 100%; max-width: 360px; }
+    .how, .hood-inner { grid-template-columns: minmax(0, 1fr); }
+    .how .intro { position: static; }
+    .coupon { grid-template-columns: 64px minmax(0, 1fr); }
+    .coupon .num { font-size: 18px; }
+    .specs div { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <img src="%%HERO_2400%%" srcset="%%HERO_1200%% 1200w, %%HERO_2400%% 2400w" sizes="100vw" alt="%%HERO_ALT%%">
+  <nav aria-label="Main">
+    <a class="logo" href="/">Safar</a>
+    <div class="links">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#hood">Under the hood</a>
+      <a class="open" href="/app">Open the trip desk</a>
+    </div>
+  </nav>
+  <div class="hero-body">
+    <div>
+      <h1>Quotes your clients can trust.</h1>
+      <p class="sub">Safar is an AI copilot for travel agents. Paste a client brief and it searches, prices and writes a day-by-day proposal, showing the source of every number.</p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/app">Try it with a client brief
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-quiet" href="#how">See how it works</a>
+      </div>
+    </div>
+    <aside class="sample" aria-label="Sample quote from a demo run">
+      <div class="top">
+        <span class="mono">%%SAMPLE_TRIP%%</span>
+        <div class="route">%%SAMPLE_ROUTE%%</div>
+        <dl class="mono">
+          <div><dt>DATES</dt><dd>%%SAMPLE_DATES%%</dd></div>
+          <div><dt>SOURCES</dt><dd>CPN 01–04</dd></div>
+        </dl>
+      </div>
+      <div class="bottom">
+        <span class="mono">CLIENT TOTAL</span>
+        <div class="total">%%SAMPLE_TOTAL%%</div>
+        <div class="etb">%%SAMPLE_SECOND%%</div>
+        <span class="tag mono">%%SAMPLE_TAG%%</span>
+      </div>
+    </aside>
+  </div>
+</header>
+
+<main>
+  <section id="how">
+    <div class="how">
+      <div class="intro">
+        <h2>From client brief to a quote you can check.</h2>
+        <p>Every lookup the agent makes is issued as a numbered coupon. The quote cites those numbers, so before anything reaches your client, you can see exactly where each price came from.</p>
+        <a class="btn btn-primary" href="/app">Open the trip desk
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </div>
+      <div class="coupons">
+        <article class="coupon">
+          <div class="num"><small>CPN</small>01</div>
+          <div class="body">
+            <h3>Paste the brief as the client wrote it.</h3>
+            <p>%%BRIEF_EXAMPLE%% Safar fills sensible gaps and says what it assumed.</p>
+          </div>
+        </article>
+        <article class="coupon">
+          <div class="num"><small>CPN</small>02</div>
+          <div class="body">
+            <h3>Watch every search as it runs.</h3>
+            <p>Outbound, return and hotels are searched in parallel. Each result lands on its own coupon with the fares behind it.</p>
+            <span class="code mono">search_flights · search_hotels</span>
+          </div>
+        </article>
+        <article class="coupon live">
+          <div class="num"><small>CPN</small>03</div>
+          <div class="body">
+            <h3>Your margin, applied in code.</h3>
+            <p>Net prices go through your agency markup and %%FX_LINE%%. The AI never does the money math.</p>
+            <span class="code mono">price_quote · +10% · %%FX_CODE%%</span>
+          </div>
+        </article>
+        <article class="coupon">
+          <div class="num"><small>CPN</small>04</div>
+          <div class="body">
+            <h3>Check the plan the client got from ChatGPT.</h3>
+            <p>Paste it in. Every flight, hotel and activity is checked against live suppliers, and code, not the AI, decides each verdict: verified, price off by how much, or not found.</p>
+            <span class="code mono">check_flight · check_hotel · check_activity</span>
+          </div>
+        </article>
+        <article class="coupon">
+          <div class="num"><small>CPN</small>05</div>
+          <div class="body">
+            <h3>Print a clean quote for the client.</h3>
+            <p>A day-by-day plan with client prices only. Net fares, your markup and the source citations stay on your screen.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="hood" class="hood">
+    <div class="hood-inner">
+      <div>
+        <h2>Under the hood.</h2>
+        <p class="lede">A full-stack agent app: a Python backend running a Claude tool-use loop, streamed live to a React interface.</p>
+      </div>
+      <dl class="specs">
+        <div><dt>Agent loop</dt><dd>Claude with adaptive thinking, parallel tool calls, refusal fallbacks and prompt caching.</dd></div>
+        <div><dt>Real-time UI</dt><dd>Server-Sent Events stream reasoning, tool calls and the proposal token by token.</dd></div>
+        <div><dt>Money in code</dt><dd>Markup and currency conversion run in a deterministic tool. The agency's markup overrides anything the model sends.</dd></div>
+        <div><dt>Suppliers</dt><dd>Flights from Duffel and hotels from LiteAPI (sandbox), searched in parallel, with demo data as a labelled fallback. %%FX_SOURCE%%</dd></div>
+        <div><dt>Reliability</dt><dd>Bad tool input comes back to the model as an error it can fix. Failed or stopped turns roll back, so a session never corrupts.</dd></div>
+        <div><dt>Stack</dt><dd>FastAPI, Anthropic SDK, React 19, no build step.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="close">
+    <h2>Try it with a real client brief.</h2>
+    <p>Pick one of the sample briefs or paste your own, then set your markup and print the client's copy.</p>
+    <a class="btn btn-primary" href="/app">Open the trip desk
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </section>
+</main>
+
+<footer>
+  <span>Safar is a demo. Fares and hotels come from supplier sandboxes and are not bookable; exchange rates are live.</span>
+  <span>Photo: <a href="%%PHOTO_URL%%">%%PHOTO_CREDIT%% on Unsplash</a></span>
+</footer>
+</body>
+</html>
